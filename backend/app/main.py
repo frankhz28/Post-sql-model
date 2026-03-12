@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from backend.app.core.db import init_db
+from backend.app.api.v1.posts.router import router as posts_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -11,3 +12,4 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.include_router(posts_router, prefix="/api/v1")
