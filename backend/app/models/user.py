@@ -44,6 +44,16 @@ class UserCreate(UserBase):
         max_length=72
     )
 
+    model_config= {
+        "json_schema_extra" : {
+            "example": {
+                "email": "user@gmail.com",
+                "full_name": "User example",
+                "password": ""
+            }
+        }
+    }
+
     @field_validator("password")
     def validate_password_complexity(cls, value: str) -> str:
         pattern = r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]+$"
