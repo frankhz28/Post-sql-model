@@ -18,9 +18,9 @@ class PostService:
             raise DatabaseError("Error interno al acceder a la base de datos para buscar posts")
 
 
-    def create_post(self, post_create: PostCreate) -> Post:
+    def create_post(self, post_create: PostCreate, user_id: int) -> Post:
         try:
-            post = Post(**post_create.model_dump())
+            post = Post(owner_id=user_id,**post_create.model_dump())
             return self.repository.create_post(post=post)
         except SQLAlchemyError:
             raise DatabaseError("Error al crear el post")

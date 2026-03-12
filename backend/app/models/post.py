@@ -23,6 +23,10 @@ class Post(PostBase, table=True):
         default_factory= lambda : datetime.now(timezone.utc),
         nullable=False,
     )
+    owner_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+    )
 
 class PostCreate(PostBase):
     model_config= {
@@ -37,4 +41,5 @@ class PostCreate(PostBase):
 class PostPublic(PostBase):
     id: int
     created_at: datetime
+    owner_id: int
     model_config = {"from_attributes": True}
