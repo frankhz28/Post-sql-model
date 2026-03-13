@@ -2,6 +2,8 @@ from backend.app.api.v1.posts.repository import PostRepository
 from backend.app.models.post import Post, PostCreate
 from sqlalchemy.exc import SQLAlchemyError
 
+from backend.app.models.user import User
+
 class DatabaseError(Exception):
     pass
 
@@ -24,3 +26,9 @@ class PostService:
             return self.repository.create_post(post=post)
         except SQLAlchemyError:
             raise DatabaseError("Error al crear el post")
+
+    def get_posts_by_user(self, user_id: int) -> list[Post]:
+        try:
+            return self.repository.get_posts_by_user(user_id=user_id)
+        except SQLAlchemyError:
+            raise DatabaseError("Error al buscar post")

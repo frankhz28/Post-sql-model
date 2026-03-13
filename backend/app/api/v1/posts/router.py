@@ -38,3 +38,14 @@ def get_post_by_tittle(
         return service.get_post_by_title(title=title)
     except DatabaseError as e:
         raise database_error(e)
+
+@router.get("/me", response_model=list[PostPublic])
+def get_posts_by_user(
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)]
+):
+    try:
+        service = PostService(PostRepository(db=db))
+        return service.get_posts_by_user(user_id=user.id)
+    except DatabaseError as e:
+        raise database_error(e)

@@ -28,3 +28,10 @@ class PostRepository:
             return self.db.exec(query).all()
         except SQLAlchemyError:
            raise
+
+    def get_posts_by_user(self, user_id: int) -> list[Post]:
+        try:
+            query = select(Post).where(Post.owner_id == user_id)
+            return self.db.exec(query).all()
+        except SQLAlchemyError:
+            raise
