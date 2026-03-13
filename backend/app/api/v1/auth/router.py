@@ -5,7 +5,6 @@ from sqlmodel import Session
 from backend.app.api.v1.auth.repository import UserRepository
 from backend.app.api.v1.auth.service import DatabaseError, InvalidCredentialsError, UserAlreadyExistsError, UserService
 from backend.app.core.db import get_session
-from backend.app.core.security import ouath2_scheme
 from backend.app.models.user import UserCreate, UserPublic
 
 
@@ -39,5 +38,6 @@ async def login(db: Annotated[Session, Depends(get_session)], form :Annotated[OA
     except InvalidCredentialsError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e)
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"}
         )
