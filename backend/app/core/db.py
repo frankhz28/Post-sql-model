@@ -1,11 +1,10 @@
 from sqlmodel import create_engine, SQLModel, Session
-import os
+from backend.app.core.config import settings
 from dotenv import load_dotenv
 
-load_dotenv()
 
 engine = create_engine(
-    url=os.getenv("DATABASE_URL", "sqlite:///./test.db"),
+    url=settings.DATABASE_URL,
     echo=True,
     connect_args={"check_same_thread": False}
 )
