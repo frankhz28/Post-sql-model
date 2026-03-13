@@ -1,10 +1,7 @@
-from typing import Annotated
-from fastapi import Depends
+from datetime import datetime, timedelta, timezone
+import jwt
 from pwdlib import PasswordHash
-from sqlmodel import Session
-from backend.app.api.v1.deps import ouath2_scheme
-from backend.app.core.db import get_session
-from backend.app.models.user import User
+from backend.app.core.config import settings
 
 pwd_contex = PasswordHash.recommended()
 
@@ -14,5 +11,16 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_contex.verify(plain_password, hashed_password)
 
-async def get_current_user(db: Annotated[Session, Depends(get_session)], token: Annotated[str,Depends(ouath2_scheme)]) -> User:
-    return db.get(User,int(token))
+def create_access_token(sub: str, minutes: int | None = None) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=minutes or settings.JWT_EXPIRES_MIN)
+    return jwt.encode(
+        payload={
+            "sub" : sub,
+            "exp":expire
+        },
+        key=settings.JWT_SECRET,
+        algorithm=settings.JWT_ALG
+    )
+
+def decode_token(token: str) -> dict:
+    return jwt.decode(jwt=token, key=settings.JWT_SECRET, algorithms=[settings.JWT_ALG])
