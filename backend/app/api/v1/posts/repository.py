@@ -35,3 +35,13 @@ class PostRepository:
             return self.db.exec(query).all()
         except SQLAlchemyError:
             raise
+
+    def update_post(self, post: Post) -> Post:
+        try:
+            self.db.add(post)
+            self.db.commit()
+            self.db.refresh(post)
+            return post
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise

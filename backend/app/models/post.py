@@ -43,3 +43,14 @@ class PostPublic(PostBase):
     created_at: datetime
     owner_id: int
     model_config = {"from_attributes": True}
+
+class PostUpdate(SQLModel):
+    title: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,  
+    )
+    content: str | None = Field(
+        default=None,
+        min_length=1 
+    )
