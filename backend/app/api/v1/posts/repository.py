@@ -45,3 +45,11 @@ class PostRepository:
         except SQLAlchemyError:
             self.db.rollback()
             raise
+
+    def delete_post(self, post: Post) -> None:
+        try:
+            self.db.delete(post)
+            self.db.commit()
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise

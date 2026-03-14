@@ -1,7 +1,7 @@
 from backend.app.api.v1.posts.repository import PostRepository
 from backend.app.models.post import Post, PostCreate, PostUpdate
 from sqlalchemy.exc import SQLAlchemyError
-from backend.app.models.user import User, Role
+from backend.app.models.user import User
 
 class DatabaseError(Exception):
     pass
@@ -20,6 +20,11 @@ class PostService:
         if user.id == post.owner_id:
             return True
         return user.is_staff
+
+    def user_can_delete(self,user: User, post: Post) -> bool:
+        if user.id == post.owner_id:
+            return True
+        return user.is_admin
 
     def get_post_by_title(self, title:str) -> list[Post]:    
         try:
@@ -59,3 +64,16 @@ class PostService:
             return self.repository.update_post(post=post)
         except SQLAlchemyError:
             raise DatabaseError("Error al actualizar el post en la base de datos")
+
+    def delete_post(self, post_id: int, user: User) -> None:
+        post = self.repository.get_post_by_id(post_id=post_id)
+        if not post:
+            raise NotFoundError("El post no existe")
+
+        if not self.user_can_delete(user=user, post=post):
+            raise ForbiddenError("No tienes permisos para eliminar este post")
+
+        try:
+            self.repository.delete_post(post=post)
+        except SQLAlchemyError:
+            raise DatabaseError("Error al eliminar el post en la base de datos")
