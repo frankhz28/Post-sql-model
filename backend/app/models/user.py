@@ -36,6 +36,17 @@ class User(UserBase, table=True):
         default_factory= lambda: datetime.now(timezone.utc)
     )
 
+    @property
+    def is_admin(self) -> bool:
+        return self.role == Role.ADMIN
+
+    @property
+    def is_editor(self) -> bool:
+        return self.role == Role.EDITOR
+    
+    @property
+    def is_staff(self) -> bool:
+        return self.is_admin or self.is_editor
 
 class UserCreate(UserBase):    
     password: str = Field(
