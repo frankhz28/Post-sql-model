@@ -21,18 +21,25 @@ class PostRepository:
             self.db.rollback()
             raise
 
-
-    def get_by_title(self, title: str) -> list[Post]:
+    def get_posts(self, title_query: str | None) -> list[Post]:
         try:
-            query = select(Post).where(func.lower(func.trim(Post.title)).like(f"%{title}%"))
-            return self.db.exec(query).all()
+            stmt = select(Post)
+            if title_query:
+                stmt = stmt.where(
+                    (func.lower(func.trim(Post.title)).like(f"%{title_query}%"))
+                )
+            return self.db.exec(stmt).all()            
         except SQLAlchemyError:
-           raise
+            raise
 
-    def get_posts_by_user(self, user_id: int) -> list[Post]:
+    def get_posts_by_user(self, user_id: int, title_query: str | None) -> list[Post]:
         try:
-            query = select(Post).where(Post.owner_id == user_id)
-            return self.db.exec(query).all()
+            stmt = select(Post).where(Post.owner_id == user_id)
+            if title_query:
+                stmt = stmt.where(
+                    func.lower(func.trim(Post.title)).like(f"%{title_query}%")
+                )
+            return self.db.exec(stmt).all()
         except SQLAlchemyError:
             raise
 

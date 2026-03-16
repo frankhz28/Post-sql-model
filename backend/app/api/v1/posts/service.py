@@ -26,13 +26,11 @@ class PostService:
             return True
         return user.is_admin
 
-    def get_post_by_title(self, title:str) -> list[Post]:    
+    def get_posts(self, query: str | None) -> list[Post]:
         try:
-            title = title.lower().strip()
-            return self.repository.get_by_title(title=title)
+            return self.repository.get_posts(title_query=query)
         except SQLAlchemyError:
             raise DatabaseError("Error interno al acceder a la base de datos para buscar posts")
-
 
     def create_post(self, post_create: PostCreate, user_id: int) -> Post:
         try:
@@ -41,9 +39,9 @@ class PostService:
         except SQLAlchemyError:
             raise DatabaseError("Error al crear el post")
 
-    def get_posts_by_user(self, user_id: int) -> list[Post]:
+    def get_posts_by_user(self, user_id: int, query: str | None) -> list[Post]:
         try:
-            return self.repository.get_posts_by_user(user_id=user_id)
+            return self.repository.get_posts_by_user(user_id=user_id, title_query=query)
         except SQLAlchemyError:
             raise DatabaseError("Error al buscar post")
 
