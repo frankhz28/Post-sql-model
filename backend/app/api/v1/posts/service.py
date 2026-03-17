@@ -2,6 +2,7 @@ from backend.app.api.v1.posts.repository import PostRepository
 from backend.app.models.post import Post, PostCreate, PostUpdate
 from sqlalchemy.exc import SQLAlchemyError
 from backend.app.models.user import User
+from backend.app.service.pagination import PaginatedResponse, paginated_query
 
 class DatabaseError(Exception):
     pass
@@ -26,11 +27,31 @@ class PostService:
             return True
         return user.is_admin
 
-    def get_posts(self, query: str | None) -> list[Post]:
+    def get_posts(
+            self,
+            query: str | None,
+            page: int,
+            per_page: int,
+            order_by: str,
+            direction: str,
+            user_id: int | None = None
+        ) -> PaginatedResponse:
+
         try:
-            return self.repository.get_posts(title_query=query)
+            base_query = self.repository.get_base_query(title_query=query, user_id=user_id)
+
+            return paginated_query(
+                db=self.repository.db,
+                model=Post,
+                base_query=base_query, 
+                page=page, 
+                per_page=per_page,
+                order_by=order_by,
+                direction=direction,
+                allowed_order={"id": Post.id, "title": Post.title}
+            )
         except SQLAlchemyError:
-            raise DatabaseError("Error interno al acceder a la base de datos para buscar posts")
+            raise DatabaseError("Error al buscar post")
 
     def create_post(self, post_create: PostCreate, user_id: int) -> Post:
         try:
