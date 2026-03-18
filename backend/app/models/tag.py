@@ -1,10 +1,5 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 from backend.app.models.post_tag_link import PostTagLink
-
-if TYPE_CHECKING:
-    from .post import Post
 
 class TagBase(SQLModel):
     name: str = Field(
@@ -20,10 +15,25 @@ class Tag(TagBase, table=True):
         primary_key=True,
         index=True
     )
-    posts: list[Post] = Relationship(
+    owner_id: int = Field(
+        foreign_key="user.id",
+        index=True
+    )
+    posts: list["Post"] = Relationship(
         back_populates="tags",
         link_model=PostTagLink
     ) 
 
 class TagPublic(TagBase):
     id: int
+    owner_id: int
+
+class TagCreate(TagBase):
+    pass
+    model_config= {
+        "json_schema_extra":{
+            "example":{
+                "name":"dev"
+            }
+        }
+    }

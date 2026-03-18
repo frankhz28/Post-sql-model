@@ -1,12 +1,7 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import Field, Relationship, SQLModel
 from backend.app.models.post_tag_link import PostTagLink
 from backend.app.models.tag import TagPublic
-
-if TYPE_CHECKING:
-    from .tag import Tag
 
 class PostBase(SQLModel):
     title: str = Field(
@@ -33,7 +28,7 @@ class Post(PostBase, table=True):
         foreign_key="user.id",
         index=True,
     )
-    tags: list[Tag] = Relationship(
+    tags: list["Tag"] = Relationship(
         back_populates="posts",
         link_model=PostTagLink
     )
