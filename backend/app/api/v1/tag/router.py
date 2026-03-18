@@ -61,3 +61,26 @@ def list_tags(
         )
     except DatabaseError as e:
         raise database_error(e)
+
+@router.get("/me", response_model=PaginatedResponse[TagPublic], status_code=status.HTTP_200_OK)
+def get_tags_by_user(
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
+    query: Optional[str] = None,
+    per_page: int = 10,
+    page: int = 1,
+    order_by: Literal["id","name"] = "id",
+    direction: Literal["asc","desc"] = "asc"
+):
+    try:
+        service = TagService(TagRepository(db))
+        return service.get_tags(
+            query=query,
+            per_page=per_page,
+            page=page,
+            order_by=order_by,
+            direction=direction,
+            user_id=user.id
+        )
+    except DatabaseError as e:
+        raise database_error(e)
