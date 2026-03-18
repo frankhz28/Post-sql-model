@@ -49,3 +49,11 @@ class TagRepository:
         except SQLAlchemyError:
             self.db.rollback()
             raise
+
+    def delete_tag(self, tag: Tag) -> None:
+        try:
+            self.db.delete(tag)
+            self.db.commit()
+        except SQLAlchemyError:
+            self.db.rollback()
+            raise

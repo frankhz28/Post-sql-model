@@ -85,3 +85,16 @@ class TagService:
             raise TagAlreadyExistsError("Ya existe un tag con este nombre")
         except SQLAlchemyError:
             raise DatabaseError("Error al actualizar el tag en la base de datos")
+
+    def delete_tag(self, tag_id: int, user: User) -> None:
+        tag = self.repository.get_tag_by_id(tag_id=tag_id)
+        if not tag:
+            raise NotFoundError("El tag no existe")
+
+        if not self.user_can_delete(user=user, tag=tag):
+            raise ForbiddenError("No tienes permisos para eliminar este tag")
+
+        try:
+            self.repository.delete_tag(tag=tag)
+        except SQLAlchemyError:
+            raise DatabaseError("Error al eliminar el tag en la base de datos")

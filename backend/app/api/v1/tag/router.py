@@ -112,3 +112,26 @@ def update_tag(
         )
     except DatabaseError as e:
         raise database_error(e)
+
+
+@router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_tag(
+    tag_id: int,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)]
+):
+    try:
+        service = TagService(TagRepository(db=db))
+        return service.delete_tag(tag_id=tag_id, user=user)
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except ForbiddenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except DatabaseError as e:
+        raise database_error(e)
