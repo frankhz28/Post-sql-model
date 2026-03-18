@@ -1,7 +1,7 @@
-from sqlalchemy.exc import SQLAlchemyError
-
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from backend.app.api.v1.tag.repository import TagRepository
-from backend.app.models.tag import Tag, TagCreate
+from backend.app.models.tag import Tag, TagCreate, TagUpdate
+from backend.app.models.user import User
 from backend.app.service.pagination import PaginatedResponse, paginated_query
 
 class DatabaseError(Exception):
@@ -10,9 +10,26 @@ class DatabaseError(Exception):
 class TagAlreadyExistsError(Exception):
     pass
 
+class NotFoundError(Exception):
+    pass
+
+class ForbiddenError(Exception):
+    pass
+
 class TagService:
     def __init__(self, repository: TagRepository):
         self.repository= repository
+
+    def user_can_edit(self,user: User, tag: Tag) -> bool:
+        if user.id == tag.owner_id:
+            return True
+        return user.is_staff
+
+
+    def user_can_delete(self,user: User, tag: Tag) -> bool:
+        if user.id == tag.owner_id:
+            return True
+        return user.is_admin
 
     def create_tag(self, tag_create: TagCreate, user_id: int) -> Tag:
         try:
@@ -48,3 +65,23 @@ class TagService:
             )
         except SQLAlchemyError:
             raise DatabaseError("Error al buscar tag")
+
+    def update_tag(self, tag_id: int, user: User, payload: TagUpdate) -> Tag | None:
+        tag = self.repository.get_tag_by_id(tag_id=tag_id)
+
+        if not tag:
+            raise NotFoundError("El tag no existe")
+
+        if not self.user_can_edit(user=user, tag=tag):
+            raise ForbiddenError("No tienes permisos para editar este tag")
+
+        updates= payload.model_dump(exclude_unset=True)
+        for key, value in updates.items():
+            setattr(tag,key,value)
+
+        try:
+            return self.repository.update_tag(tag=tag)
+        except IntegrityError:
+            raise TagAlreadyExistsError("Ya existe un tag con este nombre")
+        except SQLAlchemyError:
+            raise DatabaseError("Error al actualizar el tag en la base de datos")

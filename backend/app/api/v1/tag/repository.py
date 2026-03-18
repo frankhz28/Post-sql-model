@@ -1,7 +1,6 @@
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
-from backend.app.models import tag
 from backend.app.models.tag import Tag
 
 
@@ -39,4 +38,14 @@ class TagRepository:
                 )
             return stmt
         except SQLAlchemyError:
+            raise
+    
+    def update_tag(self, tag: Tag) -> Tag:
+        try:
+            self.db.add(tag)
+            self.db.commit()
+            self.db.refresh(tag)
+            return tag
+        except SQLAlchemyError:
+            self.db.rollback()
             raise

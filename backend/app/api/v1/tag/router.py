@@ -6,9 +6,9 @@ from sqlmodel import Session
 
 from backend.app.api.v1.deps import get_current_user
 from backend.app.api.v1.tag.repository import TagRepository
-from backend.app.api.v1.tag.service import DatabaseError, TagAlreadyExistsError, TagService
+from backend.app.api.v1.tag.service import DatabaseError, ForbiddenError, NotFoundError, TagAlreadyExistsError, TagService
 from backend.app.core.db import get_session
-from backend.app.models.tag import TagCreate, TagPublic
+from backend.app.models.tag import TagCreate, TagPublic, TagUpdate
 from backend.app.models.user import User
 from backend.app.service.pagination import PaginatedResponse
 
@@ -81,6 +81,34 @@ def get_tags_by_user(
             order_by=order_by,
             direction=direction,
             user_id=user.id
+        )
+    except DatabaseError as e:
+        raise database_error(e)
+
+@router.put("/{tag_id}",response_model=TagPublic)
+def update_tag(
+    tag_id: int,
+    payload: TagUpdate,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)]
+):
+    try:
+        service = TagService(TagRepository(db=db))
+        return service.update_tag(tag_id=tag_id,user=user,payload=payload)
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except ForbiddenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e)
+        )
+    except TagAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
     except DatabaseError as e:
         raise database_error(e)

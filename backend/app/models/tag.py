@@ -29,11 +29,19 @@ class TagPublic(TagBase):
     owner_id: int
 
 class TagCreate(TagBase):
-    pass
     model_config= {
         "json_schema_extra":{
             "example":{
                 "name":"dev"
+            }
+        }
+    }
+
+class TagUpdate(TagBase):
+    model_config= {
+        "json_schema_extra":{
+            "example":{
+                "name":"tag_actualizado"
             }
         }
     }
