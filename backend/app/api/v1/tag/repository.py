@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
 from backend.app.models import tag
@@ -25,4 +26,17 @@ class TagRepository:
             return tag
         except SQLAlchemyError:
             self.db.rollback()
+            raise
+
+    def get_base_query(self, name_query: str | None, user_id: int | None):
+        try:
+            stmt= select(Tag)
+            if user_id:
+                stmt= stmt.where(Tag.owner_id == user_id)
+            if name_query:
+                stmt= stmt.where(
+                    func.lower(func.trim(Tag.name)).like(f"%{name_query}%")
+                )
+            return stmt
+        except SQLAlchemyError:
             raise
