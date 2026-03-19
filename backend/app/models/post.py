@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from sqlmodel import Field, Relationship, SQLModel
 from backend.app.models.post_tag_link import PostTagLink
-from backend.app.models.tag import TagCreate, TagPublic
+from backend.app.models.tag import TagCreate, TagPublic, TagUpdate
 
 class PostBase(SQLModel):
     title: str = Field(
@@ -69,3 +69,18 @@ class PostUpdate(SQLModel):
         default=None,
         min_length=1 
     )
+    tags: list[TagUpdate] | None = Field(
+        default=None
+    )
+    model_config= {
+        "json_schema_extra" : {
+            "example": {
+                "title": "Title actualizado",
+                "content": "Content actualizado",
+                "tags": [
+                    {"name":"tag_actualizado"},
+                    {"name": "dev"}
+                ]
+            }
+        }
+    }

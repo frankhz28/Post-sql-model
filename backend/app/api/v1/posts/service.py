@@ -93,8 +93,22 @@ class PostService:
             raise ForbiddenError("No tienes permisos para editar este post")
 
         updates= payload.model_dump(exclude_unset=True)
+        if "tags" in updates:
+            post.tags.clear()
+            tag_repository = TagRepository(self.repository.db)
+
+            for tag in payload.tags:
+                clean_tag_name= tag.name.lower().strip()
+                tag_obj = tag_repository.get_tag_by_name(name=clean_tag_name)
+                if tag_obj:
+                    post.tags.append(tag_obj)
+                else:
+                    tag_obj = Tag(name=clean_tag_name, owner_id=user.id)
+                    post.tags.append(tag_obj)
+     
         for key, value in updates.items():
-            setattr(post,key,value)
+            if key != "tags":
+                setattr(post,key,value)
 
         try:
             return self.repository.update_post(post=post)
