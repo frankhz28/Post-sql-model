@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from sqlmodel import Field, Relationship, SQLModel
 from backend.app.models.post_tag_link import PostTagLink
-from backend.app.models.tag import TagPublic
+from backend.app.models.tag import TagCreate, TagPublic
 
 class PostBase(SQLModel):
     title: str = Field(
@@ -34,11 +34,18 @@ class Post(PostBase, table=True):
     )
 
 class PostCreate(PostBase):
+    tags: list[TagCreate] = Field(
+        default_factory=list
+    )
     model_config= {
         "json_schema_extra" : {
             "example": {
                 "title": "El asombroso mundo de Gumball",
-                "content": "Serie de animacion britanico-estadounidense de comedia familiar"
+                "content": "Serie de animacion britanico-estadounidense de comedia familiar",
+                "tags": [
+                    {"name":"dev"},
+                    {"name": "fastapi"}
+                ]
             }
         }
     } 
@@ -48,7 +55,7 @@ class PostPublic(PostBase):
     created_at: datetime
     owner_id: int
     tags: list[TagPublic] = Field(
-        default_factory=[]
+        default_factory=list
     )
     model_config = {"from_attributes": True}
 

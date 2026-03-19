@@ -33,7 +33,8 @@ class TagService:
 
     def create_tag(self, tag_create: TagCreate, user_id: int) -> Tag:
         try:
-            if self.repository.get_tag_by_name(tag_create.name):
+            setattr(tag_create, "name", tag_create.name.lower().strip())
+            if self.repository.get_tag_by_name(name=tag_create.name):
                 raise TagAlreadyExistsError("Tag ya registrado")
             tag = Tag(owner_id=user_id, **tag_create.model_dump())
             return self.repository.create_tag(tag=tag)

@@ -1,6 +1,10 @@
+from os import name
+
 from backend.app.api.v1.posts.repository import PostRepository
 from backend.app.models.post import Post, PostCreate, PostUpdate
 from sqlalchemy.exc import SQLAlchemyError
+from backend.app.api.v1.tag.repository import TagRepository
+from backend.app.models.tag import Tag
 from backend.app.models.user import User
 from backend.app.service.pagination import PaginatedResponse, paginated_query
 
@@ -55,7 +59,20 @@ class PostService:
 
     def create_post(self, post_create: PostCreate, user_id: int) -> Post:
         try:
-            post = Post(owner_id=user_id,**post_create.model_dump())
+            post = Post(
+                owner_id=user_id,
+                title=post_create.title,
+                content=post_create.content
+            )
+            tag_repository = TagRepository(db=self.repository.db)
+            for tag in post_create.tags:
+                clean_tag_name= tag.name.lower().strip()
+                tag_obj = tag_repository.get_tag_by_name(name=clean_tag_name)
+                if tag_obj:
+                    post.tags.append(tag_obj)
+                else:
+                    tag_obj = Tag(name=clean_tag_name, owner_id=user_id)
+                    post.tags.append(tag_obj)
             return self.repository.create_post(post=post)
         except SQLAlchemyError:
             raise DatabaseError("Error al crear el post")
