@@ -2,6 +2,7 @@ from sqlmodel import Session, select
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from backend.app.models.post import Post
+from backend.app.models.tag import Tag
 
 
 class PostRepository:
@@ -21,7 +22,7 @@ class PostRepository:
             self.db.rollback()
             raise
 
-    def get_base_query(self, title_query: str | None, user_id: int | None):
+    def get_base_query(self, title_query: str | None, tag_query: str | None, user_id: int | None):
         try:
             stmt= select(Post)
             if user_id:
@@ -30,6 +31,11 @@ class PostRepository:
                 stmt= stmt.where(
                     func.lower(func.trim(Post.title)).like(f"%{title_query}%")
                 )
+            if tag_query:
+                stmt= stmt.where(
+                    Post.tags.any(func.lower(func.trim(Tag.name)).like(f"%{tag_query}%"))
+                )
+            
             return stmt
         except SQLAlchemyError:
             raise

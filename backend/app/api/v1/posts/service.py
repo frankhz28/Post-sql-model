@@ -34,6 +34,7 @@ class PostService:
     def get_posts(
             self,
             query: str | None,
+            tag_query: str | None,
             page: int,
             per_page: int,
             order_by: str,
@@ -42,7 +43,11 @@ class PostService:
         ) -> PaginatedResponse:
 
         try:
-            base_query = self.repository.get_base_query(title_query=query, user_id=user_id)
+            base_query = self.repository.get_base_query(
+                title_query=query,
+                user_id=user_id,
+                tag_query=tag_query
+            )
 
             return paginated_query(
                 db=self.repository.db,

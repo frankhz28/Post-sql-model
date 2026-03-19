@@ -1,5 +1,5 @@
 from typing import Annotated, Literal, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 from backend.app.api.v1.posts.repository import PostRepository
 from backend.app.api.v1.posts.service import DatabaseError, ForbiddenError, NotFoundError, PostService
@@ -32,7 +32,14 @@ def create_post(
 @router.get("", response_model=PaginatedResponse[PostPublic], status_code=status.HTTP_200_OK)
 def list_posts(
     db: Annotated[Session, Depends(get_session)],
-    query: Optional[str] = None,
+    query: Optional[str] = Query(
+        default=None,
+        description="Filtrar por titulo"
+    ),
+    tag_query: Optional[str] = Query(
+        default=None,
+        description="Filtrar por tag"
+    ),
     per_page: int = 10,
     page: int = 1,
     order_by: Literal["id","title"] = "id",
@@ -42,6 +49,7 @@ def list_posts(
         service = PostService(PostRepository(db))
         return service.get_posts(
             query=query,
+            tag_query=tag_query,
             per_page=per_page,
             page=page,
             order_by=order_by,
@@ -54,7 +62,14 @@ def list_posts(
 def get_posts_by_user(
     db: Annotated[Session, Depends(get_session)],
     user: Annotated[User, Depends(get_current_user)],
-    query: Optional[str] = None,
+    query: Optional[str] = Query(
+        default=None,
+        description="Filtrar por titulo"
+    ),
+    tag_query: Optional[str] = Query(
+        default=None,
+        description="Filtrar por tag"
+    ),
     per_page: int = 10,
     page: int = 1,
     order_by: Literal["id","title"] = "id",
@@ -64,6 +79,7 @@ def get_posts_by_user(
         service = PostService(PostRepository(db))
         return service.get_posts(
             query=query,
+            tag_query=tag_query,
             per_page=per_page,
             page=page,
             order_by=order_by,
